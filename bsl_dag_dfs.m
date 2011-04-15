@@ -23,7 +23,7 @@ function actions = bsl_dag_dfs ( data, actions, action, varargin )
         actions.def{action, 4}{end+1} = data2;
     end;
     for nextaction = nextactions(:)',
-        actions  = pb_dag_dfs ( data2, actions, nextaction, varargin{:} );
+        actions  = bsl_dag_dfs ( data2, actions, nextaction, varargin{:} );
     end;
 
 function [ hist ] = gethist( data, params )
@@ -38,7 +38,7 @@ function [ hist ] = gethist( data, params )
             for j = 1:length(data{i}.params),
                 if ~strcmp(class(data{i}.params{j}), class(params{j})) || ...
                         ( ischar(data{i}.params{j}) && ~strcmp(data{i}.params{j}, params{j}) ) ||...
-                        ( ismatrix(data{i}.params{j}) && size(params{j})~=size(data{i}.params{j})) ||...
+                        ( ismatrix(data{i}.params{j}) && length(size(params{j}))~=length(size(data{i}.params{j})) && max(size(params{j}))~=max(size(data{i}.params{j}))) ||...
                         max(data{i}.params{j} ~= params{j}),
                     b = 0;
                     break;

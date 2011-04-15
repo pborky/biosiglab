@@ -4,17 +4,17 @@
 % 
 % load dataset.mat;
 
-% data = struct();
-% data.X = X;
-% data.y = y;
-% data.fsampl = 4000;
-% data.labels = labels;
+data = struct();
+data.X = X;
+data.y = y;
+data.fsampl = 4000;
+data.labels = labels;
 
 plan = bsl_exec_plan ({
-        @pb_bining,     {},     [1],    []; 
-        @pb_fourier,    {},     [2 3 4], [];
-        @pb_som_train,  {},     [],     [];
-        @pb_evaluate,   {},     [],     []
+        @neuro_bining,     {},     [1],    []; 
+        @neuro_fourier,    {},     [2 3 4], [];
+        @neuro_som_train,  {},     [],     [];
+        @neuro_evaluate,   {},     [],     []
     }, [
         0 1 0 0;
         0 0 1 0;
@@ -30,6 +30,6 @@ plan = bsl_exec_plan ({
         ]                           % frequency filters (column vetors of 2 components)
     } );
 
-plan = pb_dag_dfs(data, plan, [], 1000, 1000, 5, [ 0; 20] );
-plan = pb_dag_dfs(data, plan, [], 1000, 1000, 5, [20;250] );
+plan = bsl_dag_dfs(data, plan, [], 1000, 1000, 5, [ 0; 20] );
+plan = bsl_dag_dfs(data, plan, [], 1000, 1000, 5, [20;250] );
     
