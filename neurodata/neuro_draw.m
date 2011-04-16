@@ -1,4 +1,4 @@
-function [ data ] = pb_draw( data )
+function [ data ] = neuro_draw( data )
 
     %% draw normalised data
     for i = 1:length(data.sM),

@@ -1,4 +1,4 @@
-function [ data ] = pb_fourier ( data, wnd, nstep, edges )
+function [ data ] = neuro_fourier ( data, wnd, nstep, edges )
     
     %% initialize
     step   = floor(wnd/nstep);

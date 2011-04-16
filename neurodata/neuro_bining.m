@@ -1,4 +1,4 @@
-function [ data ] = pb_bining(data, fred)
+function [ data ] = neuro_bining(data, fred)
 
     %% binning samples to reduce  sampling frequenc
     % TODO try other methods of extracting features 

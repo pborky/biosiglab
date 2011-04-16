@@ -1,4 +1,4 @@
-function [ data ] = pb_som_train( data )
+function [ data ] = neuro_som_train( data )
     
     for i = 1:length(data.X),
         %% normalise data
