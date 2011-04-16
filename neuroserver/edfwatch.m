@@ -36,14 +36,14 @@ function [ server, data ] = edfwatch( server, limit, equip )
             cmd = {};
             for e = equip, cmd{end+1} = ['watch ',int2str(e)]; end;
             cmd = char(cmd);
-            fprintf('Receiving.');
+            %fprintf('Receiving.');
             [ server, message ] = neuroclientwrapper( server, cmd );
             if ~isempty(message), data{end+1} = message; end;
             server.watching = 1;
         else
             %% receiving data
             if (now<=endtime),
-                fprintf('.');
+                %fprintf('.');
                 [ server, message ] = neuroclient( server );        
                 if isempty(message),
                     tries = tries + 1;
@@ -57,13 +57,13 @@ function [ server, data ] = edfwatch( server, limit, equip )
                 end;
             else
             %% send unwatch command
-                fprintf('.');
+                %fprintf('.');
                 cmd = {};
                 for e = equip, cmd{end+1} = ['unwatch ',int2str(e)]; end;
                 cmd = char(cmd);
                 [ server, message ] = neuroclientwrapper( server, cmd );
                 if ~isempty(message), data{end+1} = message; end;
-                fprintf('\n');
+                %fprintf('\n');
                 server.watching = 0;
             end;
         end;

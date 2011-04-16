@@ -22,6 +22,6 @@ function [ data ] = neuro_draw( data )
         som_grid('hexa', [1 length(data.y)] ,'Coord', Pd, 'Marker', 'x', 'MarkerSize', 6, 'MarkerColor', colors2, 'Line', 'none');
 
         % samomns projection
-        figure('Name', 'Sammon projection of topologicdaal structure.');
-        som_grid(data.sM{i},  'Coord', sammon(data.sM{i}, 2), 'Marker', 'o', 'MarkerSize', 10, 'MarkerColor', colors, 'LineColor', 'k');
+%         figure('Name', 'Sammon projection of topologicdaal structure.');
+%         som_grid(data.sM{i},  'Coord', sammon(data.sM{i}, 2), 'Marker', 'o', 'MarkerSize', 10, 'MarkerColor', colors, 'LineColor', 'k');
     end;

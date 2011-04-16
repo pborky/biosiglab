@@ -22,7 +22,7 @@ function varargout = datagetter(varargin)
 
 % Edit the above text to modify the response to help datagetter
 
-% Last Modified by GUIDE v2.5 05-Apr-2011 23:00:37
+% Last Modified by GUIDE v2.5 16-Apr-2011 23:34:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -168,6 +168,8 @@ try
                 color = double(inst(2:4))./255;
                 set(handles.instructions, 'ForeGroundColor', color);
                 inst = inst(5:end);
+            else
+                set(handles.instructions, 'ForeGroundColor', [0 0 0]);
             end;
             set(handles.instructions, 'String', inst);
             
@@ -202,12 +204,51 @@ try
                 process.it = 1;
                 process.server = socketclose(process.server);
                 break;
-            end
-        end
+            end;
+        end;
         process.server = socketclose(process.server);
+        
+        data = struct();
+        data.labels = process.dataset{1}.classes;
+        data.X = process.dataset{1}.X';
+        data.y = process.dataset{1}.y';
+        data.fsampl = process.dataset{1}.edf{1}.head.SampleRate;
+
+        plan = bsl_exec_plan ({
+                @neuro_bining,     {},     [1],    []; 
+                @neuro_fourier,    {},     [2 3 4], [];
+                @neuro_som_train,  {},     [],     [];
+                @neuro_evaluate,   {},     [],     [];
+                @neuro_draw,       {},     [],     []
+            }, [
+                0 1 0 0 0;
+                0 0 1 0 0;
+                0 0 0 1 0;
+                0 0 0 0 1;
+                0 0 0 0 0
+            ],{
+                [256 500 1000 2000 4000];   % f samp reduced
+                [256 500 1000 2000 4000];   % time window before transform
+                [ 10 20 50 ];               % number of steps inside one window
+                [
+                    0  20; 
+                    20 250
+                ]                           % frequency filters (column vetors of 2 components)
+            } );
+        
+        fprintf(2, 'Train..');
+        
+        %plan = bsl_dag_dfs(data, plan, [], 1000, 1000, 5, [ 0; 20] );
+        plan = bsl_dag_dfs(data, plan, [], 1000, 1000, 5, [20;250] );        
+        
+        process.dataset{1}.data = plan.def{4,4}{1};
+        
         assignin('base','dataset',process.dataset);
         set(hObject,'Value', 0);
         set(handles.datagetter, 'UserData', process);
+
+        set(handles.instructions, 'String', '');
+        
     end;
     guidata(hObject, handles);
 catch e
@@ -427,7 +468,7 @@ function togglebutton4_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     t = get(hObject,'UserData');
     if isempty(t), t = timer; end;
-    if get(hObject, 'Value'),
+    if get(hObject, 'Value'),set(hObject,'Value', 0);
         t.TimerFcn = {@blink, handles.right, handles};
         t.ExecutionMode = 'fixedRate';
         t.UserData = handles.right;
@@ -461,4 +502,41 @@ function equip_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in demo.
+function demo_Callback(hObject, eventdata, handles)
+% hObject    handle to demo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of demo
+try
+    if get(hObject,'Value')
+        process = get(handles.datagetter, 'UserData');
+        if isempty(process) || (isfield(process, 'finished') && process.finished)
+            process = struct('dataset', process.dataset );
+            process.finished = 0;
+            process.server = struct('host', get(handles.host,'String'), 'port', str2double(get(handles.port,'String')));
+            set(handles.datagetter, 'UserData', process);
+        end;
+        
+
+        fprintf(2, 'Demo..');
+        % init neuroclient
+        set(handles.instructions, 'ForeGroundColor', [1 0 0]);
+        process.server =  edfdata( process.server, 1, [], 1, 20, @(data) neuro_classify(data, process.dataset.data, handles.instructions) ); 
+        set(handles.instructions, 'String', '');
+        
+        process.server = socketclose(process.server);
+        process.finished = 1;
+        
+        set(hObject,'Value', 0);
+    end;
+catch e
+    process = struct('dataset', process.dataset );
+    set(handles.datagetter, 'UserData', process);
+    set(hObject,'Value', 0);
+    throw(e);
 end

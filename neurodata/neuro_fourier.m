@@ -36,4 +36,5 @@ function [ data ] = neuro_fourier ( data, wnd, nstep, edges )
     for i = 1:nbounds,
         X{i} = data.X(data.freqs>edges(1,i) & data.freqs<=edges(2,i),:);
     end;
+    %TODO filter also .freqs
     data.X = X;

@@ -52,12 +52,17 @@ function [ server, message ] = neuroclient( server, command )
         end
         
         %% Receive data 
-        i = 1; initsize = 5000;
-        msg = cell(1,floor(initsize*1.1));
+        i = 1; initsize = 2000; maxfieldsize = initsize*1.5;
+        msg = cell(1,floor(maxfieldsize));
+        maxfieldsize = 2* maxfieldsize;
         while (true)
             msg{i} = char(server.istream.readLine);
             go = 100; while go && ~server.istream.ready && i < initsize, go = go - 1 ; pause(.001); end;
             if ~server.istream.ready, break; end;
+            if length(msg) > maxfieldsize,  
+                %fprintf(2, 'Input shortened!\n'); 
+                break;  
+            end;
             i = i+1;
         end;
         message =  char(msg(1:i));
