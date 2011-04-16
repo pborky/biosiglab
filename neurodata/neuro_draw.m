@@ -23,5 +23,5 @@ function [ data ] = pb_draw( data )
 
         % samomns projection
         figure('Name', 'Sammon projection of topologicdaal structure.');
-        som_grid(data.sM{i},  'Coord', sammon(data.sM{i}, 3), 'Marker', 'o', 'MarkerSize', 10, 'MarkerColor', colors, 'LineColor', 'k');
+        som_grid(data.sM{i},  'Coord', sammon(data.sM{i}, 2), 'Marker', 'o', 'MarkerSize', 10, 'MarkerColor', colors, 'LineColor', 'k');
     end;

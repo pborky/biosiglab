@@ -1,34 +1,17 @@
 function bsl_path(toolboxroot)
-% STPRPATH sets path to Biosignal Toolbox. 
+% BSL_PATH sets path to Biosignal Toolbox. 
 %
 % Synopsis:
-%  stprpath
-%  stprpath(toolboxroot)
+%  bsl_path
+%  bsl_path(toolboxroot)
 %
 % Description:
-%  stprpath(toolboxroot) sets path to the Statistical Pattern 
-%   Recognition Toolbox stored in given root directory toolboxroot.
+%  bsl_path(toolboxroot) sets path to the Biosignal 
+%   Toolbox stored in given root directory toolboxroot.
 %
-%  stprpath uses toolboxroot = pwd .
+%  bsl_path uses toolboxroot = pwd .
 %
 
-% About: Statistical Pattern Recognition Toolbox
-% (C) 1999-2005, Written by Vojtech Franc and Vaclav Hlavac
-% <a href="http://www.cvut.cz">Czech Technical University Prague</a>
-% <a href="http://www.feld.cvut.cz">Faculty of Electrical Engineering</a>
-% <a href="http://cmp.felk.cvut.cz">Center for Machine Perception</a>
-
-% Modifications:
-% 23-nov-2005, VF, MAC computers problem removed - updated version received 
-%                  from Vivek Varshney
-% 24-jan-2005, VF, added a new directory 'optimization'
-% 28-apr-2004, VF, renamed to stprpath
-% 22-oct-2003, FV, command addpath used.
-% 18-July-2003, VF
-% 9-Feb-2003, VF
-% 23-Jan-2003, VF
-% 7-jan-2003, VF, A new coat.
-% 23-mar-2001, V.Franc, added new directories
 
 if nargin < 1
    toolboxroot=pwd;              % get current directory
@@ -38,7 +21,6 @@ disp('Adding path for the Statistical Pattern Recognition Toolbox...');
 
 % path for UNIX
 p = ['$:',...
-     '$bayes:',...
      '$neurodata:',...
      '$neuroserver:',...
      '$external/somtoolbox:'
@@ -48,6 +30,7 @@ p=translate(p,toolboxroot);
 
 % adds path at the start
 addpath(p);
+% add path for STPR Toolbox
 stprpath(translate('$external/stprtool',toolboxroot));
 
 
