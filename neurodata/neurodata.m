@@ -199,14 +199,14 @@ try
         ],{
             [256 500 1000 2000 4000];   % f samp reduced
             [256 500 1000 2000 4000];   % time window before transform
-            [ 10 20 50 ];               % number of steps inside one window
+            [ 5 10 20 50 ];               % number of steps inside one window
             [
                 0  20; 
                 20 250
             ]                           % frequency filters (column vetors of 2 components)
         } );
     
-    profile = {execplan, 1, 1000, 1000, 5, [20;250]};
+    profile = {execplan, [], 3, 3, 1, 2};
     
     execplan = neuro_exec(d, profile{:});
     

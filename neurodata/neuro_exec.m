@@ -14,12 +14,19 @@ function actions = neuro_exec ( data, actions, action, varargin )
     action = action(1);
     nextactions = find(actions.dag(action,:));
     actiondef = actions.def(action, :);
+    params = actions.params(actiondef{3});
+    for i = 1:length(params),
+        p = params{i};
+        s = size(p);
+        p = reshape(p, [s,ones(1,2-length(s))]);
+        params{i} = p(:,varargin{actiondef{3}(i)});
+    end;
     if ~isfield(data,'params'), data.params = {[]}; end;
     data.params{1} = [data.params{1} action];
-    data.params = [data.params, varargin{actiondef{3}}];
+    data.params = [data.params, params{:}];
     data2 = gethist( actiondef{4}, data.params);
     if isempty(data2),
-        [ data2 ] = actiondef{1}(data, actiondef{2}{:}, varargin{actiondef{3}});
+        [ data2 ] = actiondef{1}(data, actiondef{2}{:}, params{:});
         actions.def{action, 4}{end+1} = data2;
     end;
     for nextaction = nextactions(:)',
