@@ -1,4 +1,4 @@
-function actions = bsl_dag_dfs ( data, actions, action, varargin )  
+function actions = neuro_exec ( data, actions, action, varargin )  
 
     %% input checks
     if nargin < 3,
@@ -23,7 +23,7 @@ function actions = bsl_dag_dfs ( data, actions, action, varargin )
         actions.def{action, 4}{end+1} = data2;
     end;
     for nextaction = nextactions(:)',
-        actions  = bsl_dag_dfs ( data2, actions, nextaction, varargin{:} );
+        actions  = neuro_exec ( data2, actions, nextaction, varargin{:} );
     end;
 
 function [ hist ] = gethist( data, params )

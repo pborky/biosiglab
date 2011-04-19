@@ -1,7 +1,7 @@
 % Signal harmonic analysis and classification
 %
-% bsl_exec_plan     - Prepare execution plan data structure
-% bsl_dag_dfs       - Execute the plan using given configuration
+% neuro_mk_exec_plan- Prepare execution plan data structure
+% neuro_exec        - Execute the plan using given configuration
 % neuro_bining      - Discretize input data
 % neuro_fourier     - Claculate fourier transforms
 % neuro_som_train   - Normalize and cluster data by using SOM toolbox

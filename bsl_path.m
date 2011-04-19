@@ -1,5 +1,5 @@
 function bsl_path(toolboxroot)
-% BSL_PATH sets path to Biosignal Toolbox. 
+% BSL_PATH sets path to Biosignal Lab Toolbox. 
 %
 % Synopsis:
 %  bsl_path
@@ -17,7 +17,7 @@ if nargin < 1
    toolboxroot=pwd;              % get current directory
 end
 
-disp('Adding path for the Statistical Pattern Recognition Toolbox...');
+disp('Adding path for the Biosignal Lab Toolbox...');
 
 % path for UNIX
 p = ['$:',...
