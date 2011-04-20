@@ -276,27 +276,39 @@ function probe_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     data = get(handles.main, 'UserData');
     data = message(data, handles, 'Reading neuroserver status..');
-    data.server = edfstatus(data.server);
+    try
+        data.server = edfstatus(data.server);
+    catch e,
+        data = message(data, handles, '!!!Caught exception!');
+        ctrls_showhide(handles, 0, []);
+        retrow(e);
+    end;
     equips = num2str(data.server.eeg(:));
     if isempty(equips), 
         data = message(data, handles, sprintf('=> no equipments found.'));
-        set(handles.equip, 'Visible', 'off'); 
-        set(handles.delay, 'Visible', 'off'); 
-        set(handles.train, 'Visible', 'off'); 
-        set(handles.demo, 'Visible', 'off'); 
-        set(handles.action, 'Visible', 'off'); 
+        ctrls_showhide(handles, 0, []);
     else
-        data = message(data, handles, sprintf('=> %i equipment(s) found.',...
-            length(data.server.eeg)));
-        set(handles.equip, 'Visible', 'on'); 
-        set(handles.delay, 'Visible', 'on'); 
-        set(handles.train, 'Visible', 'on'); 
-        set(handles.demo, 'Visible', 'on'); 
-        set(handles.action, 'Visible', 'on'); 
-        set(handles.equip, 'String', equips);
+        data = message(data, handles, ...
+            sprintf('=> %i equipment(s) found.', length(data.server.eeg)));
+        ctrls_showhide(handles, 1, equips);
     end;
     set(handles.main, 'UserData', data); 
 
+function ctrls_showhide(handles, value, equips)
+    if isnumber(value),
+        if value, value = 'on'; else value = 'off'; end;
+    end;
+    set(handles.equip, 'Visible', value); 
+    set(handles.delay, 'Visible', value); 
+    set(handles.train, 'Visible', value); 
+    set(handles.demo, 'Visible', value); 
+    set(handles.action, 'Visible', value); 
+    set(handles.purge, 'Visible', value); 
+    set(handles.equiptext, 'Visible', value); 
+    set(handles.actiontext, 'Visible', value); 
+    set(handles.durationtext, 'Visible', value); 
+    set(handles.equip, 'String', equips);
+    
 function host_Callback(hObject, eventdata, handles)
 %% host_Callback --- 
 % hObject    handle to host (see GCBO)
