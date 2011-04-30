@@ -1,59 +1,113 @@
-function actions = neuro_exec ( data, actions, action, varargin )  
+function actions = neuro_exec ( data, actions, action, idag, varargin )  
 
     %% input checks
     if nargin < 3,
         fprintf(2, 'Expecting at least 3 parameters. Exiting..');
         return;
     end;
-    if isempty(action), action = find(sum(actions.dag,1)==0); end;
-    if length(action) ~= 1,            
+    % obtain dag
+    if iscell(actions.dag), dag = actions.dag{idag}; else dag = actions.dag; end;
+    % if action is unspecified search for root node(s) in DAG
+    if isempty(action), action = find(sum(dag,1)==0); end; 
+    % but we work only with one node..
+    if length(action) ~= 1,
+        action = action(1);
         fprintf(2, 'Expecting exactly one root. Choosing %i..', action(1));
     end;
     
     %% DFS
-    action = action(1);
-    nextactions = find(actions.dag(action,:));
+    % details for execution
     actiondef = actions.def(action, :);
     params = actions.params(actiondef{3});
+    % choose param from search space
     for i = 1:length(params),
         p = params{i};
-        s = size(p);
-        p = reshape(p, [s,ones(1,2-length(s))]);
         params{i} = p(:,varargin{actiondef{3}(i)});
+        if iscell(params{i}) && length(params{i}) == 1 && ~isnumeric(params{i}{1}),
+            params{i} = params{i}{1};
+        end;
     end;
+    % if there is precalculated result use it
+    % TODO: data should be cell array and should be filled by call of parent nodes 
     if ~isfield(data,'params'), data.params = {[]}; end;
     data.params{1} = [data.params{1} action];
-    data.params = [data.params, params{:}];
+    data.params = [data.params, reshape(params, 1,[])];
     data2 = gethist( actiondef{4}, data.params);
-    if isempty(data2),
+    if isempty(data2),        
         [ data2 ] = actiondef{1}(data, actiondef{2}{:}, params{:});
-        actions.def{action, 4}{end+1} = data2;
+        if ~isempty(data2),
+            actions.def{action, 4}{end+1} = data2;
+        end;
     end;
+    % find edges and traverse there 
+    nextactions = find(dag(action,:));
     for nextaction = nextactions(:)',
-        actions  = neuro_exec ( data2, actions, nextaction, varargin{:} );
+        actions  = neuro_exec ( data2, actions, nextaction, idag, varargin{:} );
     end;
 
 function [ hist ] = gethist( data, params )
-    if isempty(data) || isempty(params), 
-        hist = [];
+    hist = [];
+    if isempty(data) || isempty(params),
         return;
     end;
-    hist = [];
     for i = 1:length(data),
-        b = 1;
-        if length(data{i}.params) == length(params),
-            for j = 1:length(data{i}.params),
-                if ~strcmp(class(data{i}.params{j}), class(params{j})) || ...
-                        ( ischar(data{i}.params{j}) && ~strcmp(data{i}.params{j}, params{j}) ) ||...
-                        ( ismatrix(data{i}.params{j}) && length(size(params{j}))~=length(size(data{i}.params{j})) && max(size(params{j}))~=max(size(data{i}.params{j}))) ||...
-                        max(data{i}.params{j} ~= params{j}),
-                    b = 0;
-                    break;
-                end;
-            end;
-            if b, 
-                hist = data{i}; 
+        if compareparams(data{i}.params, params),
+            hist = data{i};
+        end;
+    end
+    
+function [ match ] = compareparams(params1, params2)
+    match = 1;
+    if iscell(params1) && iscell(params2) && length(params1) == length(params2),
+        for j = 1:length(params1),
+            % not same dataclass
+            if ~strcmp(class(params1{j}), class(params2{j})) ...
+                    && xor(ismatrix(params1{j}), ismatrix(params2{j})),
+                match = 0; 
                 return;
             end;
+            % function handle
+            if strcmp(class(params1{j}),'function_handle'),
+                if ~strcmp(func2str(params1{j}),func2str(params2{j})),
+                    match = 0; 
+                    return;
+                else
+                    continue;
+                end;
+            end;
+            % compare stings 
+            if ischar(params1{j}),
+                if ~strcmp(params1{j}, params2{j}),
+                    match = 0; 
+                    return;
+                else
+                    continue;
+                end;
+            end;
+            % matrix
+            if ismatrix(params1{j}),
+                if (ndims(params1{j})~=ndims(params2{j}) ...
+                        || max(size(params1{j})~=size(params2{j})) ...
+                        || max(params1{j}(:) ~= params2{j}(:))),
+                    match = 0; 
+                    return;
+                else
+                    continue;
+                end;
+            end;
+            % maybe same as matrix..
+            if isnumeric(params1{j}),
+                if max(params1{j} ~= params2{j}),
+                    match = 0; 
+                    return;
+                else
+                    continue;
+                end;
+            end;
         end;
+    else
+        match = 0;
+        return;
     end;
+
+        
