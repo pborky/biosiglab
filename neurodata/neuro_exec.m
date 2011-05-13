@@ -22,7 +22,7 @@ function actions = neuro_exec ( data, actions, action, idag, varargin )
     % choose param from search space
     for i = 1:length(params),
         p = params{i};
-        params{i} = p(:,varargin{actiondef{3}(i)});
+        params{i} = p(:, varargin{actiondef{3}(i)});
         if iscell(params{i}) && length(params{i}) == 1 && ~isnumeric(params{i}{1}),
             params{i} = params{i}{1};
         end;
@@ -30,11 +30,16 @@ function actions = neuro_exec ( data, actions, action, idag, varargin )
     % if there is precalculated result use it
     % TODO: data should be cell array and should be filled by call of parent nodes 
     if ~isfield(data,'params'), data.params = {[]}; end;
+    data.iparams = reshape(cell2mat(varargin), 1,[]);
     data.params{1} = [data.params{1} action];
     data.params = [data.params, reshape(params, 1,[])];
     data2 = gethist( actiondef{4}, data.params);
-    if isempty(data2),        
+    if isempty(data2),
+        tic;
         [ data2 ] = actiondef{1}(data, actiondef{2}{:}, params{:});
+        if isfield(actions,'maxtics') && toc > actions.maxtics, 
+            throw(MException('BSL:TimeRunnedOut', 'Time for single operation runned out.')); 
+        end;
         if ~isempty(data2),
             actions.def{action, 4}{end+1} = data2;
         end;

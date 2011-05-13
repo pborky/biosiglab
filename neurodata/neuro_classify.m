@@ -27,15 +27,16 @@ function [ data ] = neuro_classify( data, dataset, hObj )
     
     [data.y, e] = som_bmus(dataset.sM{1},sD);
     %clc;
-    fprintf('Mean err: %.3f\n', mean(e));
+    fprintf('Mean quantization error: %.3f\n', mean(e));
     %dataset.sM{1}.labels{data.y};
     data.y = str2num(char(dataset.sM{1}.labels(data.y)));
     y = data.y(end-4:end);
     z = unique(y);
     h = histc(y, z);
     [~,i] = sort(h,1,'descend');
+    fprintf('Classifier weights:\n');
     for j = i(:)', 
-        fprintf('%s\t%.2f\n', dataset.labels{z(j)}, h(j)/sum(h)); 
+        fprintf('\t%s\t%.2f\n', dataset.labels{z(j)}, h(j)/sum(h)); 
     end;
     fprintf('Best matching: %s\n', dataset.labels{z(i(1))});
     set(hObj, 'Value', z(i(1)));

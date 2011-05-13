@@ -190,27 +190,27 @@ try
             @neuro_som_train,  {},     [],     [];
             @neuro_evaluate,   {},     [],     [];
             @neuro_draw,       {data.figures},     [],     []
-        }, [
+        }, { [
             0 1 0 0 0;
             0 0 1 0 0;
             0 0 0 1 0;
             0 0 0 0 1;
             0 0 0 0 0
-        ],{
+        ] },{
             [256 500 1000 2000 4000];   % f samp reduced
             [256 500 1000 2000 4000];   % time window before transform
             [ 5 10 20 50 ];               % number of steps inside one window
             [
-                0  20; 
+                0  20;
                 20 250
             ]                           % frequency filters (column vetors of 2 components)
         } );
     
-    profile = {execplan, [], 3, 3, 1, 2};
+    profile = {execplan, [], 1, 3, 3, 1, 2};
     
-    execplan = neuro_exec(d, profile{:});
+    profile{1} = neuro_exec(d, profile{:});
     
-    data.dataset.trainset = execplan.def{4,4}{1};
+    data.dataset.trainset = profile{1}.def{4,4}{1};
     
     data = message(data, handles, '=> done.');
     
@@ -241,7 +241,7 @@ try
     set(handles.action, 'ForegroundColor', [1 0 0]);
     val = get(handles.action, 'Value');
 
-    data.server =  edfdata( data.server, delay, equip, 1, 10, @(d) neuro_classify(d, data.dataset.trainset, handles.action) ); 
+    data.server =  edfdata( data.server, delay, equip, 1, 20, @(d) neuro_classify(d, data.dataset.trainset, handles.action) ); 
     [ data.server ] = socketclose( data.server );
 
     set(handles.action, 'ForegroundColor', [0 0 0]);
@@ -295,7 +295,7 @@ function probe_Callback(hObject, eventdata, handles)
     set(handles.main, 'UserData', data); 
 
 function ctrls_showhide(handles, value, equips)
-    if isnumber(value),
+    if isnumeric(value),
         if value, value = 'on'; else value = 'off'; end;
     end;
     set(handles.equip, 'Visible', value); 
