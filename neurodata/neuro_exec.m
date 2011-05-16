@@ -30,7 +30,7 @@ function actions = neuro_exec ( data, actions, action, idag, varargin )
     % if there is precalculated result use it
     % TODO: data should be cell array and should be filled by call of parent nodes 
     if ~isfield(data,'params'), data.params = {[]}; end;
-    data.iparams = reshape(cell2mat(varargin), 1,[]);
+    data.iparams = [idag,reshape(cell2mat(varargin), 1,[])];
     data.params{1} = [data.params{1} action];
     data.params = [data.params, reshape(params, 1,[])];
     data2 = gethist( actiondef{4}, data.params);

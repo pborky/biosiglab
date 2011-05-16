@@ -2,13 +2,13 @@ function [ data ] = neuro_classify( data, dataset, hObj )
 %NEURO_CLASSIFY Summary of this function goes here
 %   Detailed explanation goes here
 
-    if numel(data{1}.data) < 8000, return; end;
+    if numel(data{1}.data) < 18000, return; end;
     fprintf (2, 'Processing.\n');
     %[ server, data ] = edfdata(server, 3, [], 0 );    
     data = struct(...
-        'X', data{1}.data(end-7999:end,:)', ...
+        'X', data{1}.data(end-17999:end,:)', ...
         'fsampl', data{1}.head.SampleRate, ...
-        'y', zeros(1,8000) );
+        'y', zeros(1,18000) );
         
     [ data ] = neuro_bining(data,  dataset.params{2});
     [ data ] = neuro_fourier ( data, dataset.params{3:5} );
@@ -30,7 +30,11 @@ function [ data ] = neuro_classify( data, dataset, hObj )
     fprintf('Mean quantization error: %.3f\n', mean(e));
     %dataset.sM{1}.labels{data.y};
     data.y = str2num(char(dataset.sM{1}.labels(data.y)));
-    y = data.y(end-4:end);
+    if length(data.y) <= 4, 
+        y = data.y;
+    else
+        y = data.y(end-4:end);
+    end;
     z = unique(y);
     h = histc(y, z);
     [~,i] = sort(h,1,'descend');
