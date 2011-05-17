@@ -54,6 +54,7 @@ function bsl_demo(varargin)
             sprintf('Expecting required argument(s) [%s].\n', required)));
     end;
     
+    %% initialize process
     trainfig = [ umatfig, pcaprojfig ];
     adjustfig = [ convcurvefig ];
     
@@ -102,18 +103,41 @@ function bsl_demo(varargin)
                 'PopSize', 20, ...
                 'FitFnc', @(d,t) -log(d(1)+1E-2) - log(d(4)+.5) - (.7*d(3)-.7) - 5./(1+10*exp(6-.15*t)),...
                 'CrossFitFnc', @(fit, g, fc, t) unique(fc.fps(fit, [], ceil(.35*length(fit)))) ,...
-                'MutateOffsFnc', @(fit, g, fc, t) .05+.25./(1+10*exp(.11*g-7)),...
                 'MutateFitFnc', @(fit, g, fc, t) unique(fc.fps(-fit, [], ceil((0.05+0.25./(1+10*exp(.11*g-7)))*length(fit)))),...
+                'MutateOffsFnc', @(fit, g, fc, t) .05+.25./(1+10*exp(.11*g-7)),...
                 'MutateBitFnc', @(fit, g, fc, t) .2 ,...
-                'StopCond', @(fit, g, fc, t) stopcond(fit, g, fc, t, 30),... %g == 150, ... 
+                'StopCond', @stopcond,... %g == 150, ... 
                 'ExecProfile', adjustexecplan, ...
                 'ConvergenceCurve', adjustfig,...
                 'Verbose', 1 );
     
+    %% exec gui
     neurodata(  'Actions', {'relax', 'eyes', 'right', 'left'}, ...
                 'Server',  {'host','localhost', 'port' ,8336}, ...
                 'AdjustFnc', adjfnc, ...
                 'TrainExecProfile', {trainexecplan, [], 1} );
 
+    
+    
+    %% stop condition
+    function [cnd ] = stopcond(fit, gen, fc, t)
+        plateau = 30;
+        if gen < plateau,
+            cnd = ~~0;
+            return;
+        end;
+        g0 = gen - plateau;
+        m0 = max(t.fitness(t.generations==g0));
+        m = max(t.fitness(t.generations==gen));
+        if m ~= m0,
+            cnd = ~~0;
+            return;
+        end;
+        if max(t.fitness(t.generations > g0-1 & t.generations < gen-1)) > m,
+            cnd = ~~0;
+            return;
+        end;
+        cnd = ~~1;
+    end
 end
 

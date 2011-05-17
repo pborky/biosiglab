@@ -502,17 +502,26 @@ function load_Callback(hObject, eventdata, handles)
     name = get(handles.saveas, 'String');   
     type = cellstr(get(handles.saveto,'String'));
     type = type{get(handles.saveto,'Value')};
+    keepfields = {'winners', 'adjtimeline', 'adjdataset', 'dataset', 'actions'};
     try
         switch lower(type),
             case 'workspace'
                 data = message(data, handles, 'Loading from workspace..');
-                data = evalin('base', name);
-                data = message(data, handles, 'Loading from workspace..');
+                d = evalin('base', name);
+                for i = 1:length(keepfields),
+                    if isfield(d,keepfields{i}),
+                        data.(keepfields{i}) = d.(keepfields{i});
+                    end;
+                end;
                 data = message(data, handles, '=> done.');  
             case 'file'
                 data = message(data, handles, 'Loading from file..');
-                data = hdf5read(name, '/neuro');
-                data = message(data, handles, 'Loading from file..');
+                d = hdf5read(name, '/neuro');
+                for i = 1:length(keepfields),
+                    if isfield(d,keepfields{i}),
+                        data.(keepfields{i}) = d.(keepfields{i});
+                    end;
+                end;
                 data = message(data, handles, '=> done.');                 
         end;
         set(handles.main, 'UserData', data);
