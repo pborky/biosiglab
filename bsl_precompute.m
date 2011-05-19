@@ -15,9 +15,9 @@ function [ dataset ] = bsl_precompute( data )
     data = d;
 
     exec = neuro_mk_exec_plan ({
-            @neuro_bining,     {},     [1],     []; 
-            @neuro_fourier,    {},     [2 3 4], [];
-            @neuro_som_val,    {3},    [5 6 7 8],      []
+            @neuro_bining,     {},     [1],       []; 
+            @neuro_fourier,    {},     [2 3 4],   [];
+            @neuro_som_val,    {3},    [5 6 7 8], [] % <- resultset
         }, { [
             0 1 0 0 0;
             0 0 1 0 0;
@@ -36,7 +36,7 @@ function [ dataset ] = bsl_precompute( data )
             {'seq', 'batch'};
             {'hexa', 'rect'};
             {'small', 'normal'}
-        } );
+        }, 3 );
     % exec.maxtics = 25;
     dataset =[];
     % validation err | mean quantization error | topographic error | window  size [sec]
@@ -50,12 +50,20 @@ function [ dataset ] = bsl_precompute( data )
 
         profile{1} = exec;
         profile(2:3) = {1 1};
-        ngenes = length(profile{1}.params);
+        
+        ngenes = length(profile{1}.params)+1;
         genesizes = zeros(1, ngenes);
-        for g = 1:ngenes,
-            genesizes(g) = size(profile{1}.params{g}, 2);
+        if iscell(profile{1}.dag),
+            genesizes(1) = ceil(log2(length(profile{1}.dag)));
+        else
+            genesizes(1) = 0;
         end;
-        nspec = prod(genesizes);
+        for g = 2:ngenes,
+            genesizes(g) = ceil(log2(size(profile{1}.params{g-1}, 2)));
+        end;
+        
+        generanges = 2.^genesizes;
+        nspec = prod(generanges);
         dataset.chromosomes = nan(nspec,ngenes);
         dataset.fitness = nan(nspec,nfit);
         dataset.runningtime = nan(nspec,1);
@@ -64,7 +72,7 @@ function [ dataset ] = bsl_precompute( data )
         for i = 1:nspec,
             for j = ngenes:-1:1,
                 counters(j) = counters(j)+1;
-                if counters(j) >= genesizes(j),
+                if counters(j) >= generanges(j),
                     counters(j) = 0;
                 else
                     break;
@@ -74,7 +82,7 @@ function [ dataset ] = bsl_precompute( data )
             fprintf(['(%4.1f%% %8.0fsec) [ ' repmat('%2i,',1,ngenes-1) '%2i ] '], 100*i/nspec, tm, counters);
             dataset.chromosomes(i,:) = counters;
 
-            profile(4:4+ngenes-1) = num2cell(counters+1);
+            profile(2+(1:ngenes)) = num2cell(counters+1);
             tic;
             try                 
                 res = neuro_exec(data, profile{:});
@@ -85,9 +93,9 @@ function [ dataset ] = bsl_precompute( data )
                 continue;
             end;
             a = 1;
-            for j = length(res.def{3,4}):-1:1,
-                if ~~min(counters+1 == res.def{3,4}{j}.iparams),
-                    res = res.def{3,4}{j};
+            for j = length(res.def{res.resultsetidx,4}):-1:1,
+                if ~~min(counters+1 == res.def{res.resultsetidx,4}{j}.iparams),
+                    res = res.def{res.resultsetidx,4}{j};
                     a = 0;
                     break;
                 end;

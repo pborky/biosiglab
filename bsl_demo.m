@@ -116,8 +116,6 @@ function bsl_demo(varargin)
                 'Server',  {'host','localhost', 'port' ,8336}, ...
                 'AdjustFnc', adjfnc, ...
                 'TrainExecProfile', {trainexecplan, [], 1} );
-
-    
     
     %% stop condition
     function [cnd ] = stopcond(fit, gen, fc, t)

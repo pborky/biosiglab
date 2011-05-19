@@ -1,10 +1,10 @@
-function [ win ] = bsl_demo_ea ( exec )
+function [ win ] = bsl_demo_ea ( data )
     bsl_path;
     % neurodata('Actions', {'relax', 'eyes', 'right', 'left'}, ...
     %           'Server',  {'host','localhost', 'port' ,8336});
-
+    
+    % precalculated parameter space
     load dataset.mat;
-    load demo000.mat;
     
     %% initialize dataset and execution profile
     d = struct();
@@ -55,8 +55,8 @@ function [ win ] = bsl_demo_ea ( exec )
                     'mutatefitfnc',	@(fit, g, fc, t) unique(fc.fps(-fit, [], ceil((0.05+0.25./(1+10*exp(.11*g-7)))*length(fit)))), ...
                     'mutateoffsfnc',@(fit, g, fc, t) .05+.25./(1+10*exp(.11*g-7)), ...
                     'mutatebitfnc',	@(fit, g, fc, t) .2, ... % .05+.25./(1+50*exp(-.4*(g))), ...
-                    'stopcond',     @(fit, g, fc, t) g == 150, ... %stopcond(fit, g, fc, t, 30), ...
-                    'fitfnc',       @(d,t) -log(d(1)+1E-5) - log(d(4)+.5) - (.7*d(3)-.7) - 5./(1+10*exp(6-.15*t)), ...
+                    'stopcond',     @(fit, g, fc, t) g == 100, ... %stopcond(fit, g, fc, t, 30), ...
+                    'fitfnc',       @(d,t) -log(d(1)+1E-2) - log(d(4)+.5) - (.7*d(3)-.7) - 5./(1+10*exp(6-.15*t)), ...
                     'verbose',      0 ... %     val. err.       win. size       top. err.         exec. time
                     );
 
@@ -66,7 +66,8 @@ function [ win ] = bsl_demo_ea ( exec )
     gen = 0;
     f = -inf;
     fm = [];
-    for i = 1:100,
+    for i = 1:50,
+        fprintf('########## iteration %i\n', i);
         [ winner, fitness, timeline, dataset ] = bsl_ea( dataset, cfg2, [] );
         
         if f < max(fitness),
