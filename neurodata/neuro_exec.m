@@ -8,7 +8,9 @@ function actions = neuro_exec ( data, actions, action, idag, varargin )
     % obtain dag
     if iscell(actions.dag), dag = actions.dag{idag}; else dag = actions.dag; end;
     % if action is unspecified search for root node(s) in DAG
-    if isempty(action), action = find(sum(dag,1)==0); end; 
+    if isempty(action),
+        action = find((sum(dag,2)>0)' & sum(dag,1)==0); 
+    end; 
     % but we work only with one node..
     if length(action) ~= 1,
         action = action(1);
@@ -33,7 +35,12 @@ function actions = neuro_exec ( data, actions, action, idag, varargin )
     data.iparams = [idag,reshape(cell2mat(varargin), 1,[])];
     data.params{1} = [data.params{1} action];
     data.params = [data.params, reshape(params, 1,[])];
-    data2 = gethist( actiondef{4}, data.params);
+    if isfield(actions,'ignorepath'), 
+        ignorepath = actions.ignorepath; 
+    else
+        ignorepath = 0; 
+    end;
+    data2 = gethist( actiondef{4}, data.params, ignorepath);
     if isempty(data2),
         tic;
         [ data2 ] = actiondef{1}(data, actiondef{2}{:}, params{:});
@@ -50,19 +57,20 @@ function actions = neuro_exec ( data, actions, action, idag, varargin )
         actions  = neuro_exec ( data2, actions, nextaction, idag, varargin{:} );
     end;
 
-function [ hist ] = gethist( data, params )
+function [ hist ] = gethist( data, params, ignorepath )
     hist = [];
     if isempty(data) || isempty(params),
         return;
     end;
     for i = 1:length(data),
-        if compareparams(data{i}.params, params),
+        if compareparams(data{i}.params, params, ignorepath),
             hist = data{i};
         end;
     end
     
-function [ match ] = compareparams(params1, params2)
+function [ match ] = compareparams(params1, params2, ignorepath)
     match = 1;
+    if ignorepath, end;
     if iscell(params1) && iscell(params2) && length(params1) == length(params2),
         for j = 1:length(params1),
             % not same dataclass
